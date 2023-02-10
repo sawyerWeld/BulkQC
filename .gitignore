@@ -1,4 +1,5 @@
 inst/doc
+.Rproj.user
 .Rproj.user/*
 .Rproj.user/A819FFD5/sources/prop/INDEX
 *.json
