@@ -1,0 +1,27 @@
+Package: BulkQCprerelease
+Type: Package
+Title: Quality Control for Multisite Clinical Trials
+Version: 0.1
+Date: 2022-02-11
+Author: c("Joseph Rigdon", "Christopher Webb", "Sawyer Welden")
+Maintainer: <jrigdon@wakehealth.edu>
+Description: Outlier detection in multisite clinical trials. 
+License: use_gpl_license()
+Roxygen: list(markdown=TRUE)
+Encoding: UTF-8
+Imports:
+  isotree,
+  dplyr,
+  plyr,
+  reshape2,
+  stats,
+  stddiff,
+  tidyverse
+RoxygenNote: 7.1.2
+Depends: 
+    R (>= 2.10)
+LazyData: true
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

@@ -1,0 +1,3 @@
+"0","table_names <- c(""CPET"",""GRIP"",""HWWT"")"
+"0","ioutliers <- BulkQCprerelease::individual_outliers(list(CPET, GRIP, HWWT),table_names)"
+"0","head(ioutliers)"

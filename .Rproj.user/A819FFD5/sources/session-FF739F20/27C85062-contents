@@ -1,0 +1,60 @@
+---
+title: "BulkQCVignette"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{BulkQCVignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+library(isotree)
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## BulkQC
+
+#### Introduction to BulkQC
+
+This tutorial covers the basic usage of the `BulkQC` package. `BulkQC` helps you find outliers in multisite clinical trials.
+TODO put more here
+
+- To read the full paper see [arXiv](google.com)
+
+We've included 3 randomly generated dataframes (`GRIP`, `CPET`,`HWWT`) that mimic what you might see in a multisite clinical trial. The column `pid` contains a unique participant identifier and the column `site` identifies which clinical site the patient belongs to. 
+
+```{r}
+library(BulkQCprerelease)
+```
+
+There are 3 main analyses performed by BulkQC. They are
+
+- Univariate Testing. Description todo
+- Multivariate Outliers. Descr todo
+- Site-level Differences. Descr todo
+
+#### Individual Univariate Outliers
+
+```{r individual-outliers}
+table_names <- c("CPET","GRIP","HWWT")
+ioutliers <- BulkQCprerelease::individual_outliers(list(CPET, GRIP, HWWT),table_names)
+head(ioutliers)
+```
+```{r}
+library(ggplot2)
+qplot(ioutliers$score, geom="dotplot")
+```
+
+#### Individual Multivariate Outliers
+
+bulkQC::individual_outliers
+bulkQC::crosssite_outliers
+bulkQC::multivariate_outliers
+
+#### Multisite Outliers
+
+#### References
+
