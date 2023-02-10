@@ -19,7 +19,7 @@ library(plyr)
 #' print(individual_outliers(crfs, crf_names))
 #'
 #' @export
-individual_outliers <- function(crfs, crf_names, n_outliers=-1) {
+individual_multivariate_outliers <- function(crfs, crf_names, n_outliers=-1) {
   if (length(crfs) != length(crf_names)) {
     stop("crfs and crf_names are not of equal length")
   }

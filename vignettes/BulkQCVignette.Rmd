@@ -11,7 +11,9 @@ vignette: >
 library(isotree)
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  warning = FALSE,  # turn on to debug
+  message = FALSE
 )
 ```
 
@@ -24,7 +26,7 @@ TODO put more here
 
 - To read the full paper see [arXiv](google.com)
 
-We've included 3 randomly generated dataframes (`GRIP`, `CPET`,`HWWT`) that mimic what you might see in a multisite clinical trial. The column `pid` contains a unique participant identifier and the column `site` identifies which clinical site the patient belongs to. 
+We've included 3 randomly generated dataframes (`GRIP`, `CPET`,`HWWT`) that mimic what you might see in a multisite clinical trial. The column `pid` contains a unique participant identifier and the column `site` identifies which clinical site the patient belongs to.
 
 ```{r}
 library(BulkQCprerelease)
@@ -38,9 +40,11 @@ There are 3 main analyses performed by BulkQC. They are
 
 #### Individual Univariate Outliers
 
+#### Individual Multivariate Outliers
+
 ```{r individual-outliers}
 table_names <- c("CPET","GRIP","HWWT")
-ioutliers <- BulkQCprerelease::individual_outliers(list(CPET, GRIP, HWWT),table_names)
+ioutliers <- BulkQCprerelease::individual_multivariate_outliers(list(CPET, GRIP, HWWT),table_names)
 head(ioutliers)
 ```
 ```{r}
