@@ -29,14 +29,11 @@ individual_univariate_outliers <- function(crfs, crf_names, n_outliers=-1) {
 
   outliers <- data.frame(matrix(ncol = 4, nrow = 0))
   colnames(outliers) <- c("variable","crf","site","value")
-  # for(crf in c(views[1]))  {
-  for(crf_id in 1:length(views)) { #length(views) should be 23
-    print(crf_id)
-    crf <- views[[crf_id]]
-    sites <- crf$siteID
-    crf_name <- view_names[[crf_id]]
+  for(crf_id in 1:length(crfs)) {
+    crf <- crfs[[crf_id]]
+    sites <- crf$site
+    crf_name <- crf_names[[crf_id]]
     crf <- crf |>
-      select(-any_of(motrpac_variable_blacklist)) |>
       select(where(not_all_na)) |>
       select(where(is.numeric))
     crf$siteID <- sites
@@ -58,14 +55,15 @@ individual_univariate_outliers <- function(crfs, crf_names, n_outliers=-1) {
 
         tryCatch(expr = {
           val <- col[[xid]]
-          site <- crf[xid, ]$siteID
-          # print(site)
+          site <- crf[xid, ]$site
+
           if (!is.na(val) && (val > high_cutoff || low_cutoff > val)) {
             outliers[nrow(outliers)+1,] <- c(variable, crf_name, site, val)
           }
         },
-        error=function(x) {
-
+        error=function(e) {
+          print(e)
+          return(e)
         }
         )
       }

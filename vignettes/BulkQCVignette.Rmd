@@ -1,5 +1,5 @@
 ---
-title: "BulkQCVignette"
+title: "Outlier Detection with the BulkQC Package"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{BulkQCVignette}
@@ -9,6 +9,8 @@ vignette: >
 
 ```{r, include = FALSE}
 library(isotree)
+library(dplyr)
+library(kableExtra)
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -17,48 +19,72 @@ knitr::opts_chunk$set(
 )
 ```
 
-## BulkQC
-
-#### Introduction to BulkQC
+## Introduction to BulkQC
 
 This tutorial covers the basic usage of the `BulkQC` package. `BulkQC` helps you find outliers in multisite clinical trials.
-TODO put more here
 
-- To read the full paper see [arXiv](google.com)
+The package is intended to be used as a three-step collaboration between data coordinating centers and clinical sites. Each step has an associated function in the `BulkQC` package that identifies a particular type of possible outlier. The data coordinating center should discuss the results of the first function and clean the data accordingly before proceeding with the second step, and likewise discuss the results of the second step and remove real outliers before finishing with step three.
+
+![Three-step collaboration between data coordinating centers and clinical sites](images/ccwebb_diagram.png){width="600"}
+
+-   In the paper associated with this package we apply the algorithm to data collected in the Molecular Transducers of Physical Activity Consortium (MoTrPAC) study. To read the full paper see [TODO](motrpac.org).
 
 We've included 3 randomly generated dataframes (`GRIP`, `CPET`,`HWWT`) that mimic what you might see in a multisite clinical trial. The column `pid` contains a unique participant identifier and the column `site` identifies which clinical site the patient belongs to.
 
 ```{r}
 library(BulkQCprerelease)
+table_names <- c("CPET","GRIP","HWWT")
+kable(head(CPET))
 ```
 
 There are 3 main analyses performed by BulkQC. They are
 
-- Univariate Testing. Description todo
-- Multivariate Outliers. Descr todo
-- Site-level Differences. Descr todo
+-   **Individual Univariate Outliers**. Simple outliers defined by a single datapoint being unnaturally high or low.
+-   **Individual Multivariate Outliers**. Outliers defined by an anomalous set of variables. These variables would not trigger step 1's univariate testing, but something is fishy about the combination of variables.
+-   **Site-level Outliers**. Site-level differences in a variable.
+
+## Using the Package
 
 #### Individual Univariate Outliers
 
+First, participant-level data are examined in a univariate approach separately for all variables in the study. Values at the extreme tails of the distribution of each variable are deemed potential outliers and discussed with the originating site. To find these potential outliers we use the `individual_univariate_outliers` function. As with all three steps in BulkQC, we provide the function with a list of tables, an optional vector of table names, and an optional quantity of outliers to report. If no list of table names is provided, the function defaults to `A,B,C,…,Z` and if no quantity of outliers is provided then all of them will be returned.
+
+```{r indivdiual-univariate}
+i_u_outliers <- BulkQCprerelease::individual_univariate_outliers(list(CPET, GRIP, HWWT), table_names)
+```
+
 #### Individual Multivariate Outliers
 
-```{r individual-outliers}
-table_names <- c("CPET","GRIP","HWWT")
-ioutliers <- BulkQCprerelease::individual_multivariate_outliers(list(CPET, GRIP, HWWT),table_names)
-head(ioutliers)
+Second, participant-level data are examined in a multivariate approach for meaningful groups of variables, e.g., repeated measurements of related variables such as weight, BMI, or heart rate. Potential outliers are identified using isolation forests and again discussed with clinical sites.
+
+The anomaly scores returned from `individual_multivariate_outliers` are unitless measures in the range `[0,1]` with scores closer to 1 having a higher chance of being an outlier. The anomaly score is not a percentage. In the example below we plot all the anomaly scores as a histogram and note that two datapoints may be weak outliers.
+
+```{r individual-multivariate}
+i_m_outliers <- BulkQCprerelease::individual_multivariate_outliers(
+  list(CPET, GRIP, HWWT),
+  table_names)
+kable(head(i_m_outliers, 2), digits=2)
 ```
+
 ```{r}
 library(ggplot2)
-qplot(ioutliers$score, geom="dotplot")
+qplot(i_m_outliers$score, geom="dotplot")
 ```
 
-#### Individual Multivariate Outliers
+Looking at the top outlier, we can see that the participant's height is 51 inches and their weight is 297 pounds. While neither of these values triggered the inidivual univariate outlier detection in step 1, the combination of variables is clearly an outlier and should be sent to the participant's clinical site for verification.
 
-bulkQC::individual_outliers
-bulkQC::crosssite_outliers
-bulkQC::multivariate_outliers
+```{r}
+HWWT %>% filter(pid == "008") %>% kable()
+```
 
 #### Multisite Outliers
 
+Third, systematic site-level differences are characterized using omnibus and pairwise statistical tests, both unadjusted and adjusted for site demographics. Findings are discussed with sites and, if needed, alterations can be made to procedures for data collection.
+
+bulkQC::individual_outliers bulkQC::crosssite_outliers bulkQC::multivariate_outliers
+
 #### References
 
+#### Dev Notes
+
+-   am i using the most up-to-date version of the diagram?

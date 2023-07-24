@@ -1,0 +1,109 @@
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+library(BulkQCprerelease)
+library(odbc)
+library(DBI)
+library(dplyr)
+# library(plyr)
+library(reshape)
+library(sqldf)
+library(dplyr)
+library(isotree)
+library(plyr)
+library(stddiff)
+library(stringr)
+library(tidyverse)
+```
+
+```{r}
+con0 <- dbConnect(odbc(), Driver = "ODBC Driver 17 for SQL Server",
+                  Server = "sqlprod.phs.wakehealth.edu", Database = "motrpac",
+                  UID = "motrpacSas", PWD = "46Fw9A1B99CgE", Encoding = "UTF-16",
+                  Port = 1433)
+```
+
+
+```{r}
+
+visit_exclusion <- list("ADU_FUP","PED_FUP","AUD_PO1","AUD_PO2","AUD_PAS","PED_PAS")
+
+
+view_names <- c("v_grip", "v_iske", "v_cpet", "v_eetl", "v_dxah", "v_faeb", "v_faea",
+                "v_fara", "v_farb", "v_labr", "v_recg", "v_aeev", "v_hwwt", "v_retl",
+                "v_rmat", "v_dxag", "v_psca", "v_farc", "v_llco", "v_bphr", "v_acre",
+                "v_acee", "v_dxas")
+views <- lapply(view_names, function(i) {
+  v <- dbReadTable(con0, i) 
+  v <- v |> 
+    filter(siteID%%10 == 2) |> 
+    filter(!visitcode %in% visit_exclusion)
+  return(v)
+})
+```
+
+```{r}
+tables <- views
+names <- view_names
+# manually load in rstudio, not working with current packages for some reason TODO fix
+# load("motrpac_variable_blacklist.RData")
+print(length(motrpac_variable_blacklist))
+```
+
+IQR-based outlier detection
+```{r}
+not_all_na <- function(x) any(!is.na(x))
+
+crf <- views[[12]] |> 
+  select(-any_of(motrpac_variable_blacklist)) |>
+  select(where(not_all_na))
+
+crf_list <- c(1)
+outliers <- data.frame(matrix(ncol = 5, nrow = 0))
+colnames(outliers) <- c("variable","crf","site","value","in_range")
+# for(crf in c(views[1]))  {
+for(crf_id in 1:length(views)) {
+  crf <- views[[crf_id]]
+  sites <- crf$siteID
+  crf_name <- view_names[[crf_id]]
+  crf <- crf |> 
+    select(-any_of(motrpac_variable_blacklist)) |>
+    select(where(not_all_na)) |>
+    select(where(is.numeric))
+  crf$siteID <- sites
+  
+  if(nrow(crf) < 10) next 
+  if(ncol(crf) < 1) next
+  
+  print(glimpse(crf))
+  
+  for(cid in 1:ncol(crf)) {
+    col <- crf[[cid]]
+    variable <- colnames(crf)[[cid]]
+    fstQ <- summary(col, na.rm=TRUE)[[2]]
+    thdQ <- summary(col,na.rm=TRUE)[[5]]
+    iqr <- IQR(col,na.rm=TRUE)
+    
+    high_cutoff <- 1.5*iqr + thdQ
+    low_cutoff  <- fstQ - 1.5*iqr
+    
+    for(xid in 1:nrow(crf)) {
+      val <- col[[xid]]
+      site <- crf[xid, ]$siteID
+      r <- range_check(variable, val)
+      if (!is.na(val) && (val > high_cutoff || low_cutoff > val)) {
+        outliers[nrow(outliers)+1,] <- c(variable, crf_name, site, val, range_check(variable,val))
+      }
+    }
+  }
+}
+iqr_outliers <- outliers
+```
+
+
+```{r}
+multivar_outliers <- individual_multivariate_outliers(crfs = tables, 
+                                                      crf_names = names,
+                                                      n_outliers = 50)
+```
+

@@ -4,7 +4,7 @@ Title: Quality Control for Multisite Clinical Trials
 Version: 0.1
 Date: 2022-02-11
 Author: c("Joseph Rigdon", "Christopher Webb", "Sawyer Welden")
-Maintainer: <jrigdon@wakehealth.edu>
+Maintainer: <swelden@wakehealth.edu>
 Description: Outlier detection in multisite clinical trials. 
 License: use_gpl_license()
 Roxygen: list(markdown=TRUE)

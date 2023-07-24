@@ -90,9 +90,6 @@ multisiteQC <- function(tables,
     numeric_data[IDvar] <- df[IDvar]
     numeric_data[grouping_var] <- df[grouping_var]
 
-    ## MoTRPAC specific join
-    numeric_data <- inner_join(numeric_data, pinfo, by="pid")
-
     categor_data <- categor_vars
     categor_data[IDvar] <- df[IDvar]
     categor_data[grouping_var] <- df[grouping_var]

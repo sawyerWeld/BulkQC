@@ -1,0 +1,76 @@
+---
+title: "dxa_motrpac"
+author: "sawyer"
+date: "3/17/2023"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(BulkQCprerelease)
+library(odbc)
+library(DBI)
+library(dplyr)
+library(reshape)
+library(sqldf)
+library(dplyr)
+library(isotree)
+library(plyr)
+library(stddiff)
+library(stringr)
+library(tidyverse)
+```
+
+Get DXAG and DXAS data
+
+```{r}
+con0 <- dbConnect(odbc(), Driver = "ODBC Driver 17 for SQL Server",
+                  Server = "sqlprod.phs.wakehealth.edu", Database = "motrpac_DSMB",
+                  UID = "motrpacSas", PWD = "46Fw9A1B99CgE", Encoding = "UTF-16",
+                  Port = 1433)
+```
+
+
+```{r}
+
+visit_exclusion <- list("ADU_FUP","PED_FUP","AUD_PO1","AUD_PO2","AUD_PAS","PED_PAS")
+
+
+view_names <- c("v_DXAS","v_DXAG")
+views <- lapply(view_names, function(i) {
+  v <- dbReadTable(con0, i) 
+  v <- v |> 
+    filter(siteID%%10 == 2) |> 
+    filter(!visitcode %in% visit_exclusion)
+  return(v)
+})
+```
+
+```{r}
+tables <- views
+names <- view_names
+# manually load in rstudio, not working with current packages for some reason TODO fix
+# load("motrpac_variable_blacklist.RData")
+print(length(motrpac_variable_blacklist))
+```
+
+```{r}
+multivar_outliers <- individual_multivariate_outliers(crfs = tables, 
+                                                      crf_names = names,
+                                                      n_outliers = 50)
+```
+
+There is one clear outlier, pid 37650246. This patient was notably too wide for the DXA machine
+https://www.motrpac.org/secure/dataentry/dataentryADU/forms/frm_DXAS_English_v2.cfm?recordThread=6700FBD1-387C-44A4-B8A9-61E58CE08801
+
+```{r}
+qplot(multivar_outliers$score)
+head(multivar_outliers,10)
+```
+```{r}
+univar_outliers <- BulkQCprerelease::individual_univariate_outliers(crfs = tables, 
+                                                      crf_names = names,
+                                                      n_outliers = 50)
+head(univar_outliers)
+```
+
