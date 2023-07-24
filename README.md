@@ -9,7 +9,7 @@ To install the development version of this package use
 
 ```
 install.packages("remotes")
-remotes::install_github("sawyerWeld/BulkQCPrerelease")
+remotes::install_github("sawyerWeld/BulkQC")
 ```
 
 #### dev notes

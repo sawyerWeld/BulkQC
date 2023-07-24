@@ -1,4 +1,4 @@
-Package: BulkQCprerelease
+Package: BulkQC
 Type: Package
 Title: Quality Control for Multisite Clinical Trials
 Version: 0.1

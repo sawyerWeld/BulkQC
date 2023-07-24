@@ -32,7 +32,7 @@ The package is intended to be used as a three-step collaboration between data co
 We've included 3 randomly generated dataframes (`GRIP`, `CPET`,`HWWT`) that mimic what you might see in a multisite clinical trial. The column `pid` contains a unique participant identifier and the column `site` identifies which clinical site the patient belongs to.
 
 ```{r}
-library(BulkQCprerelease)
+library(BulkQC)
 table_names <- c("CPET","GRIP","HWWT")
 kable(head(CPET))
 ```
@@ -50,7 +50,7 @@ There are 3 main analyses performed by BulkQC. They are
 First, participant-level data are examined in a univariate approach separately for all variables in the study. Values at the extreme tails of the distribution of each variable are deemed potential outliers and discussed with the originating site. To find these potential outliers we use the `individual_univariate_outliers` function. As with all three steps in BulkQC, we provide the function with a list of tables, an optional vector of table names, and an optional quantity of outliers to report. If no list of table names is provided, the function defaults to `A,B,C,…,Z` and if no quantity of outliers is provided then all of them will be returned.
 
 ```{r indivdiual-univariate}
-i_u_outliers <- BulkQCprerelease::individual_univariate_outliers(list(CPET, GRIP, HWWT), table_names)
+i_u_outliers <- individual_univariate_outliers(list(CPET, GRIP, HWWT), table_names, "pid", "site")
 ```
 
 #### Individual Multivariate Outliers
@@ -60,7 +60,7 @@ Second, participant-level data are examined in a multivariate approach for meani
 The anomaly scores returned from `individual_multivariate_outliers` are unitless measures in the range `[0,1]` with scores closer to 1 having a higher chance of being an outlier. The anomaly score is not a percentage. In the example below we plot all the anomaly scores as a histogram and note that two datapoints may be weak outliers.
 
 ```{r individual-multivariate}
-i_m_outliers <- BulkQCprerelease::individual_multivariate_outliers(
+i_m_outliers <- individual_multivariate_outliers(
   list(CPET, GRIP, HWWT),
   table_names)
 kable(head(i_m_outliers, 2), digits=2)
