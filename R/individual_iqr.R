@@ -16,13 +16,10 @@
 #' print(individual_outliers(crfs, crf_names))
 #'
 #' @export
-individual_univariate_outliers <- function(crfs, crf_names, id_var, site_var, n_outliers=-1) {
+individual_univariate_outliers <- function(crfs, crf_names, id_var="pid", site_var="site", n_outliers=-1) {
   if (length(crfs) != length(crf_names)) {
     stop("crfs and crf_names are not of equal length")
   }
-
-  res <- data.frame(matrix(ncol = 3, nrow = 0))
-  colnames(res) <- c("pid", "crf", "score")
 
   not_all_na <- function(x) any(!is.na(x))
 
@@ -30,8 +27,8 @@ individual_univariate_outliers <- function(crfs, crf_names, id_var, site_var, n_
   colnames(outliers) <- c("variable","crf","site","value")
   for(crf_id in 1:length(crfs)) {
     crf <- crfs[[crf_id]]
-    rename(crf, pid_x = id_var)
-    rename(crf, site_x = site_var)
+    rename(crf, pid = id_var)
+    rename(crf, site = site_var)
     pids <- crf[id_var]
     sites <- crf[site_var]
     crf_name <- crf_names[[crf_id]]
@@ -39,7 +36,6 @@ individual_univariate_outliers <- function(crfs, crf_names, id_var, site_var, n_
       select(where(not_all_na)) |>
       select(where(is.numeric))
     pid <- pids
-    siteID <- sites
 
     if(nrow(crf) < 10) next
     if(ncol(crf) < 1) next
@@ -50,8 +46,7 @@ individual_univariate_outliers <- function(crfs, crf_names, id_var, site_var, n_
       if (variable %in% c(id_var, site_var)) {
         next
       }
-      print(variable)
-      # print(summary(col, na.rm=T))
+      # print(variable)
       fstQ <- summary(col, na.rm=TRUE)[[2]]
 
       thdQ <- summary(col,na.rm=TRUE)[[5]]
@@ -72,11 +67,15 @@ individual_univariate_outliers <- function(crfs, crf_names, id_var, site_var, n_
         },
         error=function(e) {
           print(e)
-          return(e)
+          stop(e)
         }
         )
       }
     }
   }
-  return(dplyr::arrange(res, crf, desc(score)))
+  if (n_outliers == -1) {
+    return(dplyr::arrange(outliers, crf, desc(crf)))
+  } else {
+    return(head(dplyr::arrange(outliers, crf, desc(crf)), n_outliers))
+  }
 }
