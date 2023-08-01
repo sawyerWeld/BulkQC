@@ -16,7 +16,10 @@ Imports:
   reshape2,
   stats,
   stddiff,
-  tidyverse
+  tidyverse,
+  ggplot2,
+  kableExtra,
+  stats
 RoxygenNote: 7.1.2
 Depends: 
     R (>= 2.10)
