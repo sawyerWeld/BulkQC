@@ -2,9 +2,9 @@ Package: BulkQC
 Type: Package
 Title: Quality Control for Multisite Clinical Trials
 Version: 0.1
-Date: 2022-02-11
-Author: c("Joseph Rigdon", "Christopher Webb", "Sawyer Welden")
-Maintainer: <swelden@wakehealth.edu>
+Date: 2023-08-08
+Author: Sawyer Welden, Christopher Webb, Joseph Rigdon
+Maintainer: Sawyer Welden <swelden@wakehealth.edu>
 Description: Outlier detection in multisite clinical trials. 
 License: use_gpl_license()
 Roxygen: list(markdown=TRUE)
